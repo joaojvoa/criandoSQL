@@ -25,7 +25,7 @@ CREATE TABLE Aluno (
 	email varchar(50),
 	UNIQUE(email),
 	ra VARCHAR(20),
-	Foto TEXT
+	Foto VARCHAR(50)
 )
 
 --PROFESSOR
@@ -49,12 +49,12 @@ CREATE TABLE Disciplina (
 	planodeensino varchar(50),
 	cargahoraria varchar(2),
 	CHECK(cargahoraria  IN ('40','80')),
-	competencias TEXT,
-	habilidades TEXT,
+	competencias VARCHAR(50),
+	habilidades VARCHAR(50),
 	ementa VARCHAR(50),
-	conteudoprogramatico TEXT,
-	bibliografiAbasica TEXT,
-	bibliografiAcomplementar TEXT,
+	conteudoprogramatico VARCHAR(50),
+	bibliografiAbasica VARCHAR(50),
+	bibliografiAcomplementar VARCHAR(50),
 	percentualPratico varchar(3),
 	CHECK (percentualPratico in ('00','100')),
 	percentualTeorico varchar(3),
@@ -76,8 +76,8 @@ CREATE TABLE Disciplina_Oferta (
 	
 	id INT IDENTITY PRIMARY KEY,
 	CONSTRAINT FK_COORDENADOR FOREIGN KEY (id) REFERENCES Coordenador(id),
-	DtInicioMatricula2 TEXT,
-	DtFimMatricula2   TEXT,
+	DtInicioMatricula2 VARCHAR(50),
+	DtFimMatricula2   VARCHAR(50),
 	CONSTRAINT FK_DISCIPLINA FOREIGN KEY (id) REFERENCES Disciplina(id),
 	CONSTRAINT FK_CURSO		 FOREIGN KEY (id)		 REFERENCES Curso(id),
 	ANO INT,
@@ -97,13 +97,13 @@ CREATE TABLE Disciplina_Oferta (
 --ATIVIDADE
 CREATE TABLE ATIVIDADE(
 	id INT IDENTITY PRIMARY KEY,
-	titulo  TEXT,
+	titulo  VARCHAR(50),
 	UNIQUE (titulo),
-	descricao TEXT,
-	conteudo TEXT,
-	TIPO TEXT,
+	descricao VARCHAR(50),
+	conteudo VARCHAR(50),
+	TIPO VARCHAR(50),
 	CHECK (TIPO  IN ('RESPOSTA ABERTA','TESTE')),
-	EXTRAS TEXT,
+	EXTRAS VARCHAR(50),
 	CONSTRAINT FK_ID_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id)
 )
 
@@ -127,7 +127,7 @@ CREATE TABLE AtividadeVinculada (
 	CONSTRAINT FK_DISCIPLINA_OFERTA FOREIGN KEY (id) REFERENCES Disciplina_Oferta(id),
 	rotulo VARCHAR(3),
 	CHECK (rotulo IN ('AC1','AC2')),
-	Status_atividade TEXT,
+	Status_atividade VARCHAR(50),
 	CHECK (Status_atividade IN ('‘Disponibilizada’','‘Aberta’','‘Fechada’', '‘Encerrada’', '‘Prorrogada’')),
 	DtInicioRespostas DATETIME,
 	DtFimRespostas DATETIME,
@@ -138,17 +138,17 @@ CREATE TABLE Entrega (
 	id INT IDENTITY PRIMARY KEY,
 	CONSTRAINT FK_ID_ALUNO FOREIGN KEY (id) REFERENCES Aluno(id),
 	CONSTRAINT FK_ID_ATIVIDADE_VINCULADA FOREIGN KEY (id) REFERENCES AtividadeVinculada(id),
-	titulo TEXT,
-	resposta TEXT,
+	titulo VARCHAR(50),
+	resposta VARCHAR(50),
 	DtEntrega DATETIME,
-	StatusEntrege TEXT,
+	StatusEntrege VARCHAR(50),
 	CHECK (StatusEntrege IN ('ENTREGUE', 'CORRIGIDO')),
 	CONSTRAINT DF_StatusEntrege DEFAULT ('ENTREGUE') FOR StatusEntregue,
 	CONSTRAINT FK_ID_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id),
-	nota TEXT,
+	nota VARCHAR(50),
 	CHECK (nota in ('0.00'-'10.00')),
 	DtAvalicao DATETIME,
-	Obs TEXT	
+	Obs VARCHAR(50)	
 )
 
 CREATE TABLE Mensagem (
@@ -159,15 +159,28 @@ CREATE TABLE Mensagem (
 	assunto VARCHAR(50),
 	Referencia VARCHAR(50),
 	Conteudo VARCHAR(50),
-	Status_Mensagem TEXT,
+	Status_Mensagem VARCHAR(50),
 	CHECK (Status_Mensagem IN ('ENVIADO', 'LIDO', 'RESPONDIDO')),
 	DtEnvio DATETIME,
 	DtResposta DATETIME,
-	Resposta TEXT,
+	Resposta VARCHAR(50),
 )
 
--- EXEMPLO ALTERAR A TABELA ENTREGA PARA AS NOTAS  EM DECIMAL
+
+-- ALTER TABLE
+
+-- SE A NOTA FOR 0.00 OU 10.00 FORMATARAR PARA DECIMAL
 
 ALTER TABLE Entrega 
 	ALTER COLUMN nota decimal (2,2) NOT NULL;
 
+-- ALTERAR A RESPOSTA TIPO  BOOLEAN
+
+ALTER TABLE Mensagem
+	ALTER COLUMN Resposta TEXT NOT NULL;
+
+-- ALTERAR A DATA DA RESPOSTA CONFORME A RESPOSTA ALTERADA 
+ALTER TABLE Mensagem
+	ALTER COLUMN DtReposta DATETIME;
+	
+	
