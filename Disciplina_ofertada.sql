@@ -146,7 +146,7 @@ CREATE TABLE Entrega (
 	CONSTRAINT DF_StatusEntrege DEFAULT ('ENTREGUE') FOR StatusEntregue,
 	CONSTRAINT FK_ID_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id),
 	nota TEXT,
-	CHECK (nota in ('0'-'10')),
+	CHECK (nota in ('0.00'-'10.00')),
 	DtAvalicao DATETIME,
 	Obs TEXT	
 )
@@ -164,5 +164,9 @@ CREATE TABLE Mensagem (
 	DtEnvio DATETIME,
 	DtResposta DATETIME,
 	Resposta TEXT,
-
 )
+
+-- EXEMPLO ALTERAR A TABELA ENTREGA PARA AS NOTAS  EM DECIMAL
+
+ALTER TABLE Entrega 
+	ALTER COLUMN nota decimal (2) NOT NULL;
