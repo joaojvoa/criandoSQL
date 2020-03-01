@@ -1,150 +1,236 @@
-Item postado em 1 de fev. Editado às 1 de fev.
-Aula inicial detalhando a metodologia e objetivos da disciplina de Linguagem SQL e introdução ao Projeto LMS.
+-- KLAYTON LEANDRO MATOS DE PAULA RA : 1800600
 
-FIT_LSQL_00_LMS.pdf
-PDF
+-- João Vitor Oliveira de Almeida RA: 1901742
 
-FIT_LSQL_00.pdf
-PDF
+-- Daniela Rodrigues de Araújo RA: 1901571
 
-Simulador Impacta - Gustavo Ferreira | Tableau Public
-https://public.tableau.com/views/SimuladorImpacta/CalculadoraNotaProva?:display_count=y&:origin=viz_share_link
-
-Material
-Gustavo Mendes Ferreira postou um novo material: Aula 02 - Revisão Fundamentos BD e Introdução a Linguagem SQL
-Item postado em 1 de fev.
-Revisão dos conceitos fundamentais de Banco de Dados.
-História da linguagem SQL e delimitação das sub-linguagens.
-Explicação e apresentação do ambiente Microsoft SQL Server e suas características.
-
-FIT_LSQL_01.pdf
-PDF
-
-Material
-Gustavo Mendes Ferreira postou um novo material: Aula 03 - DDL
-Item postado em 18 de fev.
-
-FIT_LSQL_02.pdf
-PDF
-
-FIT_LSQL_DDL.sql
-SQL
+-- Camilla Ferreira da Silva - 1901777
 
 
--- CRIANDO UM BD
-	CREATE DATABASE SALA_DE_AULA;
+--USUARIO
+CREATE TABLE Usuario (
+	id INT IDENTITY PRIMARY KEY,
+	logar VARCHAR(50),
+	senha VARCHAR(50)
+)
+
+--COORDENADOR
+CREATE TABLE Coordenador (
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_ID_USUARIO FOREIGN KEY (id) REFERENCES Usuario(id),
+	nome VARCHAR(100),
+	email VARCHAR(50),
+	UNIQUE(email),
+	celular varchar(50),
+	UNIQUE(celular)
+)
+
+
+--ALUNO
+CREATE TABLE Aluno (
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_USUARIO_ID FOREIGN KEY (id) REFERENCES Usuario(id),
+	nome VARCHAR(100),
+	email varchar(50),
+	UNIQUE(email),
+	ra VARCHAR(20),
+	Foto VARCHAR(50)
+)
+
+--PROFESSOR
+CREATE TABLE Professor (
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_ID_USUARIO FOREIGN KEY (id) REFERENCES Usuario(id),
+	email VARCHAR(50),
+	UNIQUE(email),
+	apelido VARCHAR(50)
+)
+
+--DISCIPLINA
+CREATE TABLE Disciplina (
+	id INT IDENTITY PRIMARY KEY,
+	nome VARCHAR(100),
+	UNIQUE(nome),
+	data_disciplina DATETIME,
+	CONSTRAINT DF_DATA_DISCIPLINA DEFAULT (GETDATE()) FOR data_disciplina,
+	status_disciplina VARCHAR(6),
+	CHECK( status_disciplina IN ('ABERTA','FECHADA') ),
+	planodeensino varchar(50),
+	cargahoraria varchar(2),
+	CHECK(cargahoraria  IN ('40','80')),
+	competencias VARCHAR(50),
+	habilidades VARCHAR(50),
+	ementa VARCHAR(50),
+	conteudoprogramatico VARCHAR(50),
+	bibliografiAbasica VARCHAR(50),
+	bibliografiAcomplementar VARCHAR(50),
+	percentualPratico varchar(3),
+	CHECK (percentualPratico in ('00','100')),
+	percentualTeorico varchar(3),
+	CHECK (percentualTeorico in ('00','100')),
+	CONSTRAINT FK_COORDENADOR FOREIGN KEY (id) REFERENCES Coordenador(id)
+
+)
+
+--CURSO
+CREATE TABLE Curso (
+	id INT IDENTITY PRIMARY KEY,
+	nome varchar(50),
+	UNIQUE (nome)
+)
+
+--DISCIPLINA OFERTADA
+
+CREATE TABLE Disciplina_Oferta (
 	
--- COLOCANDO UM BD EM USO
-	USE SALA_DE_AULA;
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_COORDENADOR FOREIGN KEY (id) REFERENCES Coordenador(id),
+	DtInicioMatricula2 VARCHAR(50),
+	DtFimMatricula2   VARCHAR(50),
+	CONSTRAINT FK_DISCIPLINA FOREIGN KEY (id) REFERENCES Disciplina(id),
+	CONSTRAINT FK_CURSO		 FOREIGN KEY (id)		 REFERENCES Curso(id),
+	ANO INT,
+	CHECK (ANO >= 1900 and ANO <= 2100),
+	SEMESTRE INT
+	CHECK (SEMESTRE >= 1 and SEMESTRE <= 2),
+	TURMA VARCHAR (50),
+	CHECK ( TURMA = '^[A-Z]{3}-\d{4}$'),
+	CONSTRAINT FK_id_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id),
+	METODOLOGIA			VARCHAR(100),
+	RECURSOS			VARCHAR(50),
+	CRITERIO_AVALIACAO	VARCHAR(50),
+	PLANO_DE_AULAS		VARCHAR(100)
+
+)
+
+--ATIVIDADE
+CREATE TABLE Atividade(
+	id INT IDENTITY PRIMARY KEY,
+	titulo  VARCHAR(50),
+	UNIQUE (titulo),
+	descricao TEXT,
+	conteudo TEXT,
+	TIPO VARCHAR(50),
+	CHECK (TIPO  IN ('RESPOSTA ABERTA','TESTE')),
+	EXTRAS VARCHAR(50),
+	CONSTRAINT FK_ID_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id)
+)
+
+--SOLICITACAOMATRICULA
+
+CREATE TABLE SolicitacaoMatricula(	
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_ID_ALUNO FOREIGN KEY (id) REFERENCES Aluno(id),
+	CONSTRAINT FK_DISCIPLINA_OFERTADA FOREIGN KEY (id) REFERENCES Disciplina_Oferta(id),
+	DtSolicitacao  DATETIME,
+	CONSTRAINT DF_DATA_DtSolicitacao DEFAULT (GETDATE()) FOR DtSolicitacao,
+	solicita_status varchar(10),
+	CHECK (solicita_status IN ('Solicitada','Aprovada','Rejeitada','Cancelada')),
+)
+
+--ATIVIDADEVINCULADA
+CREATE TABLE AtividadeVinculada (
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_ATIVIDADE FOREIGN KEY (id) REFERENCES Atividade(id),
+	CONSTRAINT FK_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id),
+	CONSTRAINT FK_DISCIPLINA_OFERTA FOREIGN KEY (id) REFERENCES Disciplina_Oferta(id),
+	rotulo VARCHAR(3),
+	CHECK (rotulo IN ('AC1','AC2')),
+	Status_atividade VARCHAR(50),
+	CHECK (Status_atividade IN ('‘Disponibilizada’','‘Aberta’','‘Fechada’', '‘Encerrada’', '‘Prorrogada’')),
+	DtInicioRespostas DATETIME,
+	DtFimRespostas DATETIME,
+)
+
+--ENTREGA
+CREATE TABLE Entrega (
+
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_ID_ALUNO FOREIGN KEY (id) REFERENCES Aluno(id),
+	CONSTRAINT FK_ID_ATIVIDADE_VINCULADA FOREIGN KEY (id) REFERENCES AtividadeVinculada(id),
+	titulo VARCHAR(50),
+	resposta VARCHAR(50),
+	DtEntrega DATETIME,
+	StatusEntrege VARCHAR(50),
+	CHECK (StatusEntrege IN ('ENTREGUE', 'CORRIGIDO')),
+	CONSTRAINT DF_StatusEntrege DEFAULT ('ENTREGUE') FOR StatusEntregue,
+	CONSTRAINT FK_ID_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id),
+	nota VARCHAR(50),
+	CHECK (nota in ('0.00'-'10.00')),
+	DtAvalicao DATETIME,
+	Obs VARCHAR(50)	
+)
+
+--MENSAGEM
+CREATE TABLE Mensagem (
+
+	id INT IDENTITY PRIMARY KEY,
+	CONSTRAINT FK_ID_ALUNO FOREIGN KEY (id) REFERENCES Aluno(id),
+	CONSTRAINT FK_ID_PROFESSOR FOREIGN KEY (id) REFERENCES Professor(id),
+	assunto VARCHAR(50),
+	Referencia VARCHAR(50),
+	Conteudo VARCHAR(50),
+	Status_Mensagem VARCHAR(50),
+	CHECK (Status_Mensagem IN ('ENVIADO', 'LIDO', 'RESPONDIDO')),
+	DtEnvio DATETIME,
+	DtResposta DATETIME,
+	Resposta VARCHAR(50),
+)
+
+
+-- ALTER TABLE
+
+-- SE A NOTA FOR 0.00 OU 10.00 FORMATARAR PARA DECIMAL
+
+ALTER TABLE Entrega 
+	ALTER COLUMN nota decimal (2,2) NOT NULL;
+
+
+-- ALTERAR A RESPOSTA TIPO  BOOLEAN
+
+ALTER TABLE Mensagem
+	ALTER COLUMN Resposta TEXT NOT NULL;
+
+-- ALTERAR A DATA DA RESPOSTA CONFORME A RESPOSTA ALTERADA 
+ALTER TABLE Mensagem
+	ALTER COLUMN DtReposta DATETIME;
+
+ALTER TABLE Mensagem 
+	ALTER COLUMN Status_Mensagem TEXT NOT NULL;
+--
+
+-- ALTERAR A ATIVIDADE VINCULADA
+
+ALTER TABLE AtividadeVinculada 
+	ALTER COLUMN Status_atividade TEXT NOT NULL;
+
+-- ALTERAR ENTREGE 
+
+ALTER TABLE Entregue 
+	ALTER COLUMN  StatusEntrege TEXT NOT NULL;
+
+-- ALTERAR SOLICITACAO 
+
+ALTER TABLE SolicitacaoMatricula
+	ALTER COLUMN solicita_status TEXT NOT NULL;
+
+--ALTERAR ATIVIDADE TIPO
+
+ALTER TABLE Atividade
+	ALTER COLUMN TIPO TEXT NOT NULL;
+
+-- ALTERAR Disciplina
+
+ALTER TABLE Disciplina
+	ALTER  COLUMN status_disciplina  TEXT NOT NULL;
+
+ALTER TABLE Disciplina
+	ALTER  COLUMN cargahoraria  TEXT NOT NULL;
 	
--- CRIANDO TABELA ALUNOS
-	CREATE TABLE ALUNOS
-	(
-		NUM_ALUNO INT IDENTITY , --identity (1, -1) 
-		NOME VARCHAR(30) NOT NULL,
-		DATA_NASCIMENTO DATETIME,
-		IDADE TINYINT,
-		E_MAIL VARCHAR(50),
-		FONE_RES CHAR(8),
-		FONE_COM CHAR(8),
-		FAX CHAR(8),
-		CELULAR CHAR(9),
-		PROFISSAO VARCHAR(40),
-		EMPRESA VARCHAR(50) 
-	);
+ALTER TABLE Disciplina 
+	ALTER COLUMN percentualPratico TEXT NOT NULL;
 
--- CRIANDO BD
-	CREATE DATABASE VENDAS;
-	go
-	USE VENDAS;
+ALTER TABLE Disciplina
 
--- Tabela de tipos (categorias) de produto
-	CREATE TABLE TIPO_PRODUTO
-	( 
-		COD_TIPO INT IDENTITY NOT NULL,
-		TIPO VARCHAR(30) NOT NULL,
-
-		CONSTRAINT PK_TIPO_PRODUTO PRIMARY KEY (COD_TIPO)
-	);
-	
--- Tabela de produtos
-	CREATE TABLE PRODUTOS
-	( 
-		ID_PRODUTO INT IDENTITY NOT NULL,
-		DESCRICAO VARCHAR(50),
-		COD_TIPO INT,
-		PRECO_CUSTO NUMERIC(10,2), 
-		PRECO_VENDA NUMERIC(10,2),
-		QTD_REAL NUMERIC(10,2),
-		QTD_MINIMA NUMERIC(10,2),
-		DATA_CADASTRO DATETIME,
-		SN_ATIVO CHAR(1),
-
-		CONSTRAINT PK_PRODUTOS PRIMARY KEY( ID_PRODUTO ),
-		CONSTRAINT FK_PRODUTOS_TIPO_PRODUTO 
-			FOREIGN KEY (COD_TIPO)
-			REFERENCES TIPO_PRODUTO (COD_TIPO) 
-	);
-
---EXCLUINDO AS TABELAS
-	IF EXISTS (SELECT * FROM SYS.tables WHERE name = 'PRODUTOS')
-		DROP TABLE PRODUTOS;
-	
-	IF EXISTS (SELECT * FROM SYS.tables WHERE name = 'TIPO_PRODUTO')
-		DROP TABLE TIPO_PRODUTO;
-
--- Criação da tabela TIPO_PRODUTO
-	CREATE TABLE TIPO_PRODUTO
-	(
-		COD_TIPO INT IDENTITY NOT NULL,
-		TIPO VARCHAR(30) NOT NULL 
-	);
-
--- Criando a tabela PRODUTOS
-	CREATE TABLE PRODUTOS
-	( 
-		ID_PRODUTO INT IDENTITY NOT NULL,
-		DESCRICAO VARCHAR(50),
-		COD_TIPO INT,
-		PRECO_CUSTO NUMERIC(10,2),
-		PRECO_VENDA NUMERIC(10,2),
-		QTD_REAL NUMERIC(10,2),
-		QTD_MINIMA NUMERIC(10,2),
-		DATA_CADASTRO DATETIME,
-		SN_ATIVO CHAR(1)
-	 );
-
--- Criando as constraints com ALTER TABLE
-ALTER TABLE TIPO_PRODUTO ADD
-	CONSTRAINT PK_TIPO_PRODUTO PRIMARY KEY (COD_TIPO),
-	CONSTRAINT UQ_TIPO_PRODUTO_TIPO UNIQUE( TIPO );
-
--- Criando as constraints com ALTER TABLE
-ALTER TABLE PRODUTOS ADD
-	CONSTRAINT PK_PRODUTOS PRIMARY KEY( ID_PRODUTO ),
-	CONSTRAINT UQ_PRODUTOS_DESCRICAO UNIQUE( DESCRICAO ),
-	CONSTRAINT CK_PRODUTOS_PRECOS
-		CHECK( PRECO_VENDA >= PRECO_CUSTO ),
-	CONSTRAINT CK_PRODUTOS_SN_ATIVO
-		CHECK( SN_ATIVO IN ('N','S') ),
-	CONSTRAINT FK_PRODUTOS_TIPO_PRODUTO FOREIGN KEY (COD_TIPO)
-		REFERENCES TIPO_PRODUTO (COD_TIPO),
-	CONSTRAINT DF_SN_ATIVO DEFAULT ('S') FOR SN_ATIVO;
-
-ALTER TABLE PRODUTOS ADD
-	CONSTRAINT DF_DATA_CADASTRO DEFAULT (GETDATE()) FOR DATA_CADASTRO;
-
--- Excluindo coluna
-ALTER TABLE PRODUTOS 
-	DROP COLUMN SN_ATIVO;
-
--- Adicionando coluna
-ALTER TABLE PRODUTOS 
-	ADD OBSERVACAO VARCHAR(50);
-
--- Alterando o data type / nulabilidade
-ALTER TABLE PRODUTOS 
-	ALTER COLUMN PRECO_VENDA decimal (12,2) NOT NULL;
-
--- Trocando o nome de uma coluna
-EXEC sp_RENAME 'DBO.PRODUTOS.QTD_MINIMA', 'QTD_MIN', 'COLUMN';
+	ALTER COLUMN percentualTeorico TEXT NOT NULL;
+---
