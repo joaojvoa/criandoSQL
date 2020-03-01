@@ -1,0 +1,150 @@
+Item postado em 1 de fev. Editado às 1 de fev.
+Aula inicial detalhando a metodologia e objetivos da disciplina de Linguagem SQL e introdução ao Projeto LMS.
+
+FIT_LSQL_00_LMS.pdf
+PDF
+
+FIT_LSQL_00.pdf
+PDF
+
+Simulador Impacta - Gustavo Ferreira | Tableau Public
+https://public.tableau.com/views/SimuladorImpacta/CalculadoraNotaProva?:display_count=y&:origin=viz_share_link
+
+Material
+Gustavo Mendes Ferreira postou um novo material: Aula 02 - Revisão Fundamentos BD e Introdução a Linguagem SQL
+Item postado em 1 de fev.
+Revisão dos conceitos fundamentais de Banco de Dados.
+História da linguagem SQL e delimitação das sub-linguagens.
+Explicação e apresentação do ambiente Microsoft SQL Server e suas características.
+
+FIT_LSQL_01.pdf
+PDF
+
+Material
+Gustavo Mendes Ferreira postou um novo material: Aula 03 - DDL
+Item postado em 18 de fev.
+
+FIT_LSQL_02.pdf
+PDF
+
+FIT_LSQL_DDL.sql
+SQL
+
+
+-- CRIANDO UM BD
+	CREATE DATABASE SALA_DE_AULA;
+	
+-- COLOCANDO UM BD EM USO
+	USE SALA_DE_AULA;
+	
+-- CRIANDO TABELA ALUNOS
+	CREATE TABLE ALUNOS
+	(
+		NUM_ALUNO INT IDENTITY , --identity (1, -1) 
+		NOME VARCHAR(30) NOT NULL,
+		DATA_NASCIMENTO DATETIME,
+		IDADE TINYINT,
+		E_MAIL VARCHAR(50),
+		FONE_RES CHAR(8),
+		FONE_COM CHAR(8),
+		FAX CHAR(8),
+		CELULAR CHAR(9),
+		PROFISSAO VARCHAR(40),
+		EMPRESA VARCHAR(50) 
+	);
+
+-- CRIANDO BD
+	CREATE DATABASE VENDAS;
+	go
+	USE VENDAS;
+
+-- Tabela de tipos (categorias) de produto
+	CREATE TABLE TIPO_PRODUTO
+	( 
+		COD_TIPO INT IDENTITY NOT NULL,
+		TIPO VARCHAR(30) NOT NULL,
+
+		CONSTRAINT PK_TIPO_PRODUTO PRIMARY KEY (COD_TIPO)
+	);
+	
+-- Tabela de produtos
+	CREATE TABLE PRODUTOS
+	( 
+		ID_PRODUTO INT IDENTITY NOT NULL,
+		DESCRICAO VARCHAR(50),
+		COD_TIPO INT,
+		PRECO_CUSTO NUMERIC(10,2), 
+		PRECO_VENDA NUMERIC(10,2),
+		QTD_REAL NUMERIC(10,2),
+		QTD_MINIMA NUMERIC(10,2),
+		DATA_CADASTRO DATETIME,
+		SN_ATIVO CHAR(1),
+
+		CONSTRAINT PK_PRODUTOS PRIMARY KEY( ID_PRODUTO ),
+		CONSTRAINT FK_PRODUTOS_TIPO_PRODUTO 
+			FOREIGN KEY (COD_TIPO)
+			REFERENCES TIPO_PRODUTO (COD_TIPO) 
+	);
+
+--EXCLUINDO AS TABELAS
+	IF EXISTS (SELECT * FROM SYS.tables WHERE name = 'PRODUTOS')
+		DROP TABLE PRODUTOS;
+	
+	IF EXISTS (SELECT * FROM SYS.tables WHERE name = 'TIPO_PRODUTO')
+		DROP TABLE TIPO_PRODUTO;
+
+-- Criação da tabela TIPO_PRODUTO
+	CREATE TABLE TIPO_PRODUTO
+	(
+		COD_TIPO INT IDENTITY NOT NULL,
+		TIPO VARCHAR(30) NOT NULL 
+	);
+
+-- Criando a tabela PRODUTOS
+	CREATE TABLE PRODUTOS
+	( 
+		ID_PRODUTO INT IDENTITY NOT NULL,
+		DESCRICAO VARCHAR(50),
+		COD_TIPO INT,
+		PRECO_CUSTO NUMERIC(10,2),
+		PRECO_VENDA NUMERIC(10,2),
+		QTD_REAL NUMERIC(10,2),
+		QTD_MINIMA NUMERIC(10,2),
+		DATA_CADASTRO DATETIME,
+		SN_ATIVO CHAR(1)
+	 );
+
+-- Criando as constraints com ALTER TABLE
+ALTER TABLE TIPO_PRODUTO ADD
+	CONSTRAINT PK_TIPO_PRODUTO PRIMARY KEY (COD_TIPO),
+	CONSTRAINT UQ_TIPO_PRODUTO_TIPO UNIQUE( TIPO );
+
+-- Criando as constraints com ALTER TABLE
+ALTER TABLE PRODUTOS ADD
+	CONSTRAINT PK_PRODUTOS PRIMARY KEY( ID_PRODUTO ),
+	CONSTRAINT UQ_PRODUTOS_DESCRICAO UNIQUE( DESCRICAO ),
+	CONSTRAINT CK_PRODUTOS_PRECOS
+		CHECK( PRECO_VENDA >= PRECO_CUSTO ),
+	CONSTRAINT CK_PRODUTOS_SN_ATIVO
+		CHECK( SN_ATIVO IN ('N','S') ),
+	CONSTRAINT FK_PRODUTOS_TIPO_PRODUTO FOREIGN KEY (COD_TIPO)
+		REFERENCES TIPO_PRODUTO (COD_TIPO),
+	CONSTRAINT DF_SN_ATIVO DEFAULT ('S') FOR SN_ATIVO;
+
+ALTER TABLE PRODUTOS ADD
+	CONSTRAINT DF_DATA_CADASTRO DEFAULT (GETDATE()) FOR DATA_CADASTRO;
+
+-- Excluindo coluna
+ALTER TABLE PRODUTOS 
+	DROP COLUMN SN_ATIVO;
+
+-- Adicionando coluna
+ALTER TABLE PRODUTOS 
+	ADD OBSERVACAO VARCHAR(50);
+
+-- Alterando o data type / nulabilidade
+ALTER TABLE PRODUTOS 
+	ALTER COLUMN PRECO_VENDA decimal (12,2) NOT NULL;
+
+-- Trocando o nome de uma coluna
+EXEC sp_RENAME 'DBO.PRODUTOS.QTD_MINIMA', 'QTD_MIN', 'COLUMN';
